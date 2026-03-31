@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from .models import Course, Enrollment
 from .forms import RegisterForm
+from django.contrib.auth.models import User
 
 
 def home(request):
@@ -10,29 +11,37 @@ def home(request):
 
 
 def register(request):
-    form = RegisterForm(request.POST or None)
-    if form.is_valid():
-        user = form.save(commit=False)
-        user.set_password(form.cleaned_data['password'])
-        user.save()
-        return redirect('login')
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = User.objects.create_user(
+                username=form.cleaned_data['username'],
+                email=form.cleaned_data['email'],
+                password=form.cleaned_data['password']
+            )
+
+            role = form.cleaned_data['role']
+
+            if role == 'admin':
+                user.is_staff = True   # 🔥 makes user admin
+                user.is_superuser = False
+            else:
+                user.is_staff = False
+
+            user.save()
+            return redirect('login')
+    else:
+        form = RegisterForm()
+
     return render(request, 'register.html', {'form': form})
 
 
 @login_required
 def dashboard(request):
-    if request.user.is_superuser:
-        courses = Course.objects.all()
-        enrollments = Enrollment.objects.count()
-        return render(request, 'admin_dashboard.html', {
-            'courses': courses,
-            'enrollments': enrollments
-        })
+    if request.user.is_staff:
+        return render(request, 'admin_dashboard.html')
     else:
-        enrollments = Enrollment.objects.filter(student=request.user)
-        return render(request, 'student_dashboard.html', {
-            'enrollments': enrollments
-        })
+        return render(request, 'student_dashboard.html')
 
 
 @login_required
