@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Create Course | Course Management{% endblock %}
+
+{% block nav_items %}
+<li class="nav-item"><a class="nav-link" href="/dashboard/">Dashboard</a></li>
+<li class="nav-item"><a class="nav-link" href="/courses/">Courses</a></li>
+<li class="nav-item"><a class="nav-link" href="/logout/">Logout</a></li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center" style="min-height: 70vh;">
+    <div class="col-md-6 col-lg-5">
+        <div class="app-card">
+            <h3 class="mb-4">Create New Course</h3>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary btn-pill w-100">Create Course</button>
+            </form>
+            <div class="text-end mt-3">
+                <a href="/courses/" class="btn btn-outline-secondary btn-sm">Back to course list</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

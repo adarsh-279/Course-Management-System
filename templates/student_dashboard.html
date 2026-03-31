@@ -1,20 +1,33 @@
-{% extends 'home.html' %}
+{% extends 'base.html' %}
+{% block title %}Student Dashboard | Course Management{% endblock %}
+
+{% block nav_items %}
+<li class="nav-item"><a class="nav-link" href="{% url 'courses' %}">Courses</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'my_courses' %}">My Courses</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+{% endblock %}
+
 {% block content %}
+<div class="mb-4">
+    <h2 class="mb-2">Welcome back, {{ request.user.username }}!</h2>
+    <p class="text-muted">Your current enrollments are shown below.</p>
+</div>
 
-<h2>My Courses</h2>
-
-<ul class="list-group">
+<div class="row">
 {% for e in enrollments %}
-<li class="list-group-item">
-{{ e.course.name }} ({{ e.course.code }})
-</li>
+    <div class="col-md-4">
+        <div class="app-card">
+            <h5 class="mb-1">{{ e.course.name }}</h5>
+            <p class="text-muted mb-2">{{ e.course.code }}</p>
+            <small class="text-secondary">Enrolled on {{ e.enrolled_at|date:'M d, Y' }}</small>
+        </div>
+    </div>
 {% empty %}
-<li class="list-group-item">No courses enrolled</li>
+    <div class="col-12">
+        <div class="app-card">
+            <p class="mb-0">You have no enrolled courses yet. Visit <a href="/courses/">Courses</a> to enroll.</p>
+        </div>
+    </div>
 {% endfor %}
-</ul>
-
-<a href="/courses/" class="btn btn-primary mt-3">
-Browse Courses
-</a>
-
+</div>
 {% endblock %}

@@ -1,27 +1,47 @@
-{% extends 'home.html' %}
+{% extends 'base.html' %}
+{% block title %}Courses | Course Management{% endblock %}
+
+{% block nav_items %}
+<li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+{% endblock %}
+
 {% block content %}
+<div class="mb-4 d-flex justify-content-between align-items-center">
+    <div>
+        <h2>Courses</h2>
+        <p class="text-muted">Browse available courses and enroll in one click.</p>
+    </div>
+    {% if is_admin %}
+    <div>
+        <a href="/courses/create/" class="btn btn-primary btn-pill">+ Create Course</a>
+    </div>
+    {% endif %}
+</div>
 
-<h2>All Courses</h2>
-
-<table class="table table-bordered">
-<tr>
-<th>Name</th>
-<th>Code</th>
-<th>Action</th>
-</tr>
-
+<div class="row">
 {% for course in courses %}
-<tr>
-<td>{{ course.name }}</td>
-<td>{{ course.code }}</td>
-<td>
-<a href="/enroll/{{ course.id }}/" class="btn btn-success">
-Enroll
-</a>
-</td>
-</tr>
+    <div class="col-md-4">
+        <div class="app-card">
+            <h5>{{ course.name }}</h5>
+            <p class="text-muted">{{ course.code }}</p>
+            <p>{{ course.description|truncatewords:20 }}</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="badge bg-primary">Capacity: {{ course.capacity }}</span>
+                {% if is_admin %}
+                    <a class="btn btn-sm btn-danger btn-pill" href="/courses/delete/{{ course.id }}/">Delete</a>
+                {% else %}
+                    <a class="btn btn-sm btn-success btn-pill" href="/enroll/{{ course.id }}/">Enroll</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% empty %}
+    <div class="col-12">
+        <div class="app-card">
+            <p>No courses found. Please check back later.</p>
+        </div>
+    </div>
 {% endfor %}
-
-</table>
-
+</div>
 {% endblock %}

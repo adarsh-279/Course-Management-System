@@ -1,17 +1,37 @@
-{% extends 'home.html' %}
+{% extends 'base.html' %}
+{% block title %}Register | Course Management{% endblock %}
+
 {% block content %}
+<div class="row justify-content-center" style="min-height: 70vh;">
+    <div class="col-md-5 col-lg-4">
+        <div class="app-card">
+            <h3 class="text-center mb-4">Create Account</h3>
+            <form method="post" novalidate>
+                {% csrf_token %}
 
-<h2>Register</h2>
+                <div class="mb-3">
+                    <input type="text" name="username" class="form-control" placeholder="Username" required>
+                </div>
+                <div class="mb-3">
+                    <input type="email" name="email" class="form-control" placeholder="Email" required>
+                </div>
+                <div class="mb-3">
+                    <input type="password" name="password" class="form-control" placeholder="Password" required>
+                </div>
+                <div class="mb-3">
+                    <select name="role" class="form-control" required>
+                        <option value="student">Student</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
 
-<form method="post">
-{% csrf_token %}
+                <button class="btn btn-primary btn-pill w-100">Register</button>
+            </form>
 
-<input type="text" name="username" class="form-control mb-2" placeholder="Username">
-<input type="email" name="email" class="form-control mb-2" placeholder="Email">
-<input type="password" name="password" class="form-control mb-2" placeholder="Password">
-
-<button class="btn btn-success">Register</button>
-
-</form>
-
+            <div class="text-center mt-3">
+                <small>Already registered? <a href="/login/">Login</a></small>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
