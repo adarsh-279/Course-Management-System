@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Admin Dashboard</h2>
+
+<div class="card p-3">
+<p>Total Courses: {{ courses.count }}</p>
+<p>Total Enrollments: {{ students }}</p>
+
+<a href="/courses/" class="btn btn-primary">
+View Courses
+</a>
+</div>
+
+{% endblock %}

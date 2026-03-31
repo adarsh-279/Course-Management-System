@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>All Courses</h2>
+
+<table class="table table-bordered">
+<tr>
+<th>Name</th>
+<th>Code</th>
+<th>Action</th>
+</tr>
+
+{% for course in courses %}
+<tr>
+<td>{{ course.name }}</td>
+<td>{{ course.code }}</td>
+<td>
+<a href="/enroll/{{ course.id }}/" class="btn btn-success">
+Enroll
+</a>
+</td>
+</tr>
+{% endfor %}
+
+</table>
+
+{% endblock %}

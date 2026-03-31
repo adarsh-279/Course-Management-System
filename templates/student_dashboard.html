@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>My Courses</h2>
+
+<ul class="list-group">
+{% for e in enrollments %}
+<li class="list-group-item">
+{{ e.course.name }} ({{ e.course.code }})
+</li>
+{% empty %}
+<li class="list-group-item">No courses enrolled</li>
+{% endfor %}
+</ul>
+
+<a href="/courses/" class="btn btn-primary mt-3">
+Browse Courses
+</a>
+
+{% endblock %}
