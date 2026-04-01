@@ -80,14 +80,22 @@ def course_list(request):
     })
 
 
+from collections import defaultdict
+
 @login_required
 def enrollment_list(request):
     if not request.user.is_staff:
         return redirect('dashboard')
 
-    enrollments = Enrollment.objects.select_related('student', 'course').order_by('course__name', 'student__username')
+    enrollments = Enrollment.objects.select_related('student', 'course')
+
+    course_data = defaultdict(list)
+
+    for e in enrollments:
+        course_data[e.course].append(e)
+
     return render(request, 'enrollments.html', {
-        'enrollments': enrollments,
+        'course_data': dict(course_data)
     })
 
 

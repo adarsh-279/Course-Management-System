@@ -2,16 +2,103 @@
 {% block title %}Welcome | Course Management System{% endblock %}
 
 {% block content %}
-<div class="row align-items-center justify-content-center" style="min-height: 70vh;">
+
+<style>
+.hero {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.app-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 50px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+    animation: fadeUp .6s ease;
+}
+
+.hero-title {
+    font-weight: 700;
+    font-size: 2.5rem;
+}
+
+.hero-subtitle {
+    color: #6c757d;
+    font-size: 1.1rem;
+}
+
+.btn-pill {
+    border-radius: 50px;
+    padding: 10px 25px;
+    transition: .3s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99,102,241,0.4);
+}
+
+.btn-outline-primary:hover {
+    transform: translateY(-2px);
+}
+
+.bg-blur {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: #6366f1;
+    filter: blur(120px);
+    opacity: 0.2;
+    top: 10%;
+    left: 20%;
+    z-index: -1;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(25px);
+    }
+}
+</style>
+
+<div class="hero position-relative">
+
+    <!-- Background glow -->
+    <div class="bg-blur"></div>
+
     <div class="col-lg-6">
-        <div class="app-card text-center p-5">
-            <h1 class="mb-3">Course Management System</h1>
-            <p class="lead text-muted">A clean, secure and premium experience for admins and students.</p>
-            <div class="d-flex gap-2 justify-content-center mt-4">
-                <a href="/login/" class="btn btn-primary btn-pill px-4">Login</a>
-                <a href="/register/" class="btn btn-outline-primary btn-pill px-4">Register</a>
+        <div class="app-card text-center">
+
+            <h1 class="hero-title mb-3">
+                🎓 Course Management System
+            </h1>
+
+            <p class="hero-subtitle mb-4">
+                A clean, secure and premium experience for admins and students.
+                Manage courses, enrollments and dashboards effortlessly.
+            </p>
+
+            <div class="d-flex gap-3 justify-content-center mt-4">
+                <a href="/login/" class="btn btn-primary btn-pill px-4">
+                    Login
+                </a>
+
+                <a href="/register/" class="btn btn-outline-primary btn-pill px-4">
+                    Register
+                </a>
             </div>
+
         </div>
     </div>
+
 </div>
+
 {% endblock %}

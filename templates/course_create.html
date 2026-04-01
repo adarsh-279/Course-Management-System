@@ -1,26 +1,107 @@
 {% extends 'base.html' %}
 {% block title %}Create Course | Course Management{% endblock %}
 
-{% block nav_items %}
-<li class="nav-item"><a class="nav-link" href="/dashboard/">Dashboard</a></li>
-<li class="nav-item"><a class="nav-link" href="/courses/">Courses</a></li>
-<li class="nav-item"><a class="nav-link" href="/logout/">Logout</a></li>
-{% endblock %}
-
 {% block content %}
-<div class="row justify-content-center" style="min-height: 70vh;">
+
+<style>
+
+/* Center card animation */
+.create-card{
+    animation: fadeUp .5s ease;
+}
+
+/* Form styling */
+.create-card input,
+.create-card textarea{
+    border-radius: 12px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    transition: .3s;
+}
+
+/* Focus effect */
+.create-card input:focus,
+.create-card textarea:focus{
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 2px rgba(79,70,229,0.1);
+}
+
+/* Button hover */
+.btn-primary{
+    transition: .3s;
+}
+
+.btn-primary:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+/* Animation */
+@keyframes fadeUp{
+    from{
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to{
+        opacity: 1;
+    }
+}
+
+</style>
+
+<div class="row justify-content-center align-items-center" style="min-height: 75vh;">
+
     <div class="col-md-6 col-lg-5">
-        <div class="app-card">
-            <h3 class="mb-4">Create New Course</h3>
+
+        <div class="app-card create-card">
+
+            <h3 class="mb-3 fw-bold text-center">
+                <i class="fa fa-plus-circle me-2 text-primary"></i>
+                Create New Course
+            </h3>
+
+            <p class="text-muted text-center mb-4">
+                Add a new course for students
+            </p>
+
             <form method="post" novalidate>
                 {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-primary btn-pill w-100">Create Course</button>
+
+                <div class="mb-3">
+                    <label class="form-label">Course Name</label>
+                    {{ form.name }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Course Code</label>
+                    {{ form.code }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    {{ form.description }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Capacity</label>
+                    {{ form.capacity }}
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-pill w-100">
+                    Create Course
+                </button>
             </form>
-            <div class="text-end mt-3">
-                <a href="/courses/" class="btn btn-outline-secondary btn-sm">Back to course list</a>
+
+            <div class="text-center mt-3">
+                <a href="/courses/" class="btn btn-outline-secondary btn-sm btn-pill">
+                    ← Back to Courses
+                </a>
             </div>
+
         </div>
+
     </div>
+
 </div>
+
 {% endblock %}
