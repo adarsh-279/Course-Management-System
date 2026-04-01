@@ -73,10 +73,15 @@ def course_list(request):
         courses = Course.objects.all()
         special_note = ''
 
+    enrolled_course_ids = []
+    if not request.user.is_staff:
+        enrolled_course_ids = Enrollment.objects.filter(student=request.user).values_list('course_id', flat=True)
+
     return render(request, 'course_list.html', {
         'courses': courses,
         'is_admin': request.user.is_staff,
         'special_note': special_note,
+        'enrolled_course_ids': list(enrolled_course_ids),
     })
 
 
@@ -145,7 +150,10 @@ def delete_course(request, course_id):
 @login_required
 def enroll(request, course_id):
     course = get_object_or_404(Course, id=course_id)
-    Enrollment.objects.get_or_create(student=request.user, course=course)
+    if Enrollment.objects.filter(student=request.user, course=course).exists():
+        return redirect('my_courses')
+
+    Enrollment.objects.create(student=request.user, course=course)
     return redirect('my_courses')
 
 
