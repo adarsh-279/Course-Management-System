@@ -18,6 +18,11 @@ import dj_database_url
 
 load_dotenv()
 
+
+def _env_bool(key, default='False'):
+    return os.environ.get(key, default).lower() in ('1', 'true', 'yes')
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -29,15 +34,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-development-secret')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() in ('1', 'true', 'yes')
+# Default True so clone → install → migrate → runserver works without extra env (demos / local).
+# In production set DJANGO_DEBUG=false (or 0) and DJANGO_SECRET_KEY.
+DEBUG = _env_bool('DJANGO_DEBUG', 'True')
 
 if not DEBUG and SECRET_KEY == 'django-insecure-development-secret':
     raise ImproperlyConfigured('Set DJANGO_SECRET_KEY in the environment before running in production.')
 
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+    if h.strip()
+]
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME.strip())
 
 
 # Application definition
@@ -54,13 +65,13 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -94,7 +105,7 @@ if DATABASE_URL:
         DATABASES['default'] = dj_database_url.parse(
             DATABASE_URL,
             conn_max_age=600,
-            ssl_require=True,
+            ssl_require=_env_bool('DATABASE_SSL_REQUIRE', 'true'),
         )
     except dj_database_url.ParseError:
         DATABASES = {}
