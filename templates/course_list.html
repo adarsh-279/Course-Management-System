@@ -9,8 +9,11 @@
 {% block content %}
 <div class="mb-4 d-flex justify-content-between align-items-center">
     <div>
-        <h2>Courses</h2>
+        <h2>BTech Courses</h2>
         <p class="text-muted">Browse available courses and enroll in one click.</p>
+        {% if special_note %}
+          <small class="text-success">{{ special_note }}</small>
+        {% endif %}
     </div>
     {% if is_admin %}
     <div>
