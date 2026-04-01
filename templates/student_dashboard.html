@@ -4,103 +4,111 @@
 {% block content %}
 
 <style>
-.dashboard-header {
-    animation: fadeDown .5s ease;
+
+/* Page Header */
+.page-header {
+    margin-bottom: 20px;
 }
 
-.app-card {
-    background: #fff;
-    border-radius: 18px;
-    padding: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    transition: .3s;
-    animation: fadeUp .5s ease;
-}
-
-.app-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(0,0,0,0.12);
-}
-
-.course-code {
-    font-size: 13px;
-    background: #eef2ff;
-    color: #4f46e5;
-    padding: 4px 10px;
-    border-radius: 20px;
-    display: inline-block;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 30px;
-}
-
-.empty-state a {
+.page-header h2 {
     font-weight: 600;
-    text-decoration: none;
 }
 
-@keyframes fadeUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
+/* Card */
+.table-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
 }
 
-@keyframes fadeDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
+/* Table */
+.table {
+    margin-bottom: 0;
 }
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table th {
+    font-weight: 600;
+}
+
+/* Hover */
+.table tbody tr:hover {
+    background-color: #f1f5ff;
+}
+
+/* Buttons */
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 13px;
+}
+
 </style>
 
-<div class="mb-4 dashboard-header">
-    <h2 class="fw-bold"> Welcome back, {{ request.user.username }}!</h2>
-    <p class="text-muted">Here are your enrolled courses.</p>
+<!-- Header -->
+<div class="page-header">
+    <h2>Welcome back, {{ request.user.username }}!</h2>
+    <p class="text-muted">Here are your enrolled courses</p>
 </div>
 
-<div class="row g-4">
+<div class="table-card">
 
-{% for e in enrollments %}
-    <div class="col-md-4">
-        <div class="app-card h-100">
+{% if enrollments %}
 
-            <h5 class="mb-2 fw-semibold">
-                {{ e.course.name }}
-            </h5>
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
 
-            <div class="mb-2">
-                <span class="course-code">
-                    {{ e.course.code }}
-                </span>
-            </div>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Course</th>
+                    <th>Code</th>
+                    <th>Enrolled On</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
 
-            <p class="text-muted small mb-0">
-                Enrolled on {{ e.enrolled_at|date:'M d, Y' }}
-            </p>
+            <tbody>
+                {% for e in enrollments %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ e.course.name }}</td>
+                    <td>{{ e.course.code }}</td>
+                    <td>{{ e.enrolled_at|date:'d M Y' }}</td>
 
-        </div>
+                    <td>
+                        <!-- View -->
+                        <a href="/courses/{{ e.course.id }}/" class="btn btn-info btn-sm">
+                            View
+                        </a>
+
+                        <!-- Leave -->
+                        <a href="/leave-course/{{ e.course.id }}/" class="btn btn-danger btn-sm">
+                            Leave
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
     </div>
 
-{% empty %}
-    <div class="col-12">
-        <div class="app-card empty-state">
+{% else %}
 
-            <h5 class="mb-2">No Courses Yet</h5>
+    <div class="text-center p-4">
+        <h5>No Courses Yet</h5>
+        <p class="text-muted">You haven’t enrolled in any courses.</p>
 
-            <p class="text-muted mb-3">
-                You haven’t enrolled in any courses.
-            </p>
-
-            <a href="/courses/" class="btn btn-primary btn-pill px-4">
-                Browse Courses
-            </a>
-
-        </div>
+        <a href="/courses/" class="btn btn-primary">
+            Browse Courses
+        </a>
     </div>
-{% endfor %}
+
+{% endif %}
 
 </div>
 

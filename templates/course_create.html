@@ -19,6 +19,12 @@
     transition: .3s;
 }
 
+/* ✅ Fix description box size */
+.create-card textarea{
+    resize: none;
+    height: 120px;
+}
+
 /* Focus effect */
 .create-card input:focus,
 .create-card textarea:focus{
@@ -77,6 +83,13 @@
                     {{ form.code }}
                 </div>
 
+                <!-- ✅ Instructor -->
+                <div class="mb-3">
+                    <label class="form-label">Instructor</label>
+                    {{ form.instructor }}
+                </div>
+
+                <!-- ✅ Description (fixed) -->
                 <div class="mb-3">
                     <label class="form-label">Description</label>
                     {{ form.description }}
@@ -85,6 +98,18 @@
                 <div class="mb-3">
                     <label class="form-label">Capacity</label>
                     {{ form.capacity }}
+                </div>
+
+                <!-- ✅ Start Date -->
+                <div class="mb-3">
+                    <label class="form-label">Start Date</label>
+                    {{ form.start_date }}
+                </div>
+
+                <!-- ✅ End Date -->
+                <div class="mb-3">
+                    <label class="form-label">End Date</label>
+                    {{ form.end_date }}
                 </div>
 
                 <button type="submit" class="btn btn-primary btn-pill w-100">
