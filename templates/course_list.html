@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+{% block title %}Courses | Course Management{% endblock %}
+
+{% block content %}
+
+<style>
+body {
+    background: linear-gradient(135deg, #eef2ff, #f8fafc);
+    font-family: 'Poppins', sans-serif;
+}
+
+.page-header {
+    animation: fadeInDown .5s ease;
+}
+
+.table-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.table {
+    margin-bottom: 0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table th,
+.table td {
+    border: 1px solid #e5e7eb;
+}
+
+.table tbody tr:hover {
+    background-color: #eef2ff;
+}
+
+.btn-pill {
+    border-radius: 50px;
+    padding: 5px 12px;
+}
+</style>
+
+<!-- Header -->
+<div class="mb-4 d-flex justify-content-between align-items-center page-header">
+    <div>
+        <h2 class="fw-bold">Courses</h2>
+        <p class="text-muted">Manage courses easily.</p>
+    </div>
+
+    {% if is_admin %}
+    <div>
+        <a href="{% url 'course_create' %}" class="btn btn-primary btn-pill">
+            + Create Course
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Table -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Code</th>
+                    <th>Capacity</th>
+                    <th>Instructor</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for course in courses %}
+                <tr>
+                    <td class="fw-semibold">{{ course.name }}</td>
+                    <td>{{ course.code }}</td>
+                    <td>{{ course.capacity }}</td>
+                    <td>{{ course.instructor|default:'-' }}</td>
+                    <td>{{ course.start_date|date:'M d, Y' }}</td>
+                    <td>{{ course.end_date|date:'M d, Y' }}</td>
+
+                    <td class="d-flex gap-2">
+                        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewCourseModal" data-id="{{ course.id }}">View</button>
+
+                        {% if request.user.is_staff %}
+                            <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editCourseModal" data-id="{{ course.id }}">Edit</button>
+                            <button class="btn btn-danger btn-sm" data-action="delete-course" data-id="{{ course.id }}">Delete</button>
+                        {% else %}
+                            {% if course.id in enrolled_course_ids %}
+                                <button class="btn btn-secondary btn-sm" disabled>Enrolled</button>
+                            {% else %}
+                                <a class="btn btn-success btn-sm" href="{% url 'enroll' course.id %}">Enroll</a>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted">No courses found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
+<!-- VIEW MODAL -->
+<div class="modal fade" id="viewCourseModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Course Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="viewCourseBody">Loading...</div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal fade" id="editCourseModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form id="editCourseForm">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Course</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" id="editCourseId">
+
+          <div class="mb-3">
+            <label>Name</label>
+            <input class="form-control" id="editCourseName">
+          </div>
+
+          <div class="mb-3">
+            <label>Code</label>
+            <input class="form-control" id="editCourseCode">
+          </div>
+
+          <div class="mb-3">
+            <label>Capacity</label>
+            <input type="number" class="form-control" id="editCourseCapacity">
+          </div>
+
+          <div class="mb-3">
+            <label>Instructor</label>
+            <input class="form-control" id="editCourseInstructor">
+          </div>
+
+          <div class="mb-3">
+            <label>Description</label>
+            <textarea class="form-control" id="editCourseDescription"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label>Start Date</label>
+            <input type="date" class="form-control" id="editCourseStartDate">
+          </div>
+
+          <div class="mb-3">
+            <label>End Date</label>
+            <input type="date" class="form-control" id="editCourseEndDate">
+          </div>
+
+          <div id="editCourseAlert" class="alert d-none"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-warning">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    document.cookie.split(';').forEach(c => {
+        if (c.trim().startsWith(name + '=')) {
+            cookieValue = decodeURIComponent(c.split('=')[1]);
+        }
+    });
+    return cookieValue;
+}
+
+function api(url, options = {}) {
+    return fetch(url, options).then(r => r.json());
+}
+
+function url(id, type) {
+    return `/api/course/${id}/${type}/`;
+}
+
+/* ✅ DATE FORMAT FUNCTION */
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+}
+
+/* VIEW */
+document.getElementById('viewCourseModal')
+.addEventListener('show.bs.modal', async function (e) {
+    const id = e.relatedTarget.getAttribute('data-id');
+    const d = await api(url(id,'detail'));
+
+    document.getElementById('viewCourseBody').innerHTML = `
+        <ul class="list-group">
+            <li class="list-group-item"><b>Name:</b> ${d.name}</li>
+            <li class="list-group-item"><b>Code:</b> ${d.code}</li>
+            <li class="list-group-item"><b>Capacity:</b> ${d.capacity}</li>
+            <li class="list-group-item"><b>Instructor:</b> ${d.instructor || '-'}</li>
+            <li class="list-group-item"><b>Description:</b> ${d.description || '-'}</li>
+            <li class="list-group-item"><b>Start Date:</b> ${formatDate(d.start_date)}</li>
+            <li class="list-group-item"><b>End Date:</b> ${formatDate(d.end_date)}</li>
+        </ul>
+    `;
+});
+
+/* EDIT LOAD */
+document.getElementById('editCourseModal')
+.addEventListener('show.bs.modal', async function (e) {
+    const id = e.relatedTarget.getAttribute('data-id');
+    const d = await api(url(id,'detail'));
+
+    editCourseId.value = d.id;
+    editCourseName.value = d.name;
+    editCourseCode.value = d.code;
+    editCourseCapacity.value = d.capacity;
+    editCourseInstructor.value = d.instructor;
+    editCourseDescription.value = d.description;
+    editCourseStartDate.value = d.start_date || '';
+    editCourseEndDate.value = d.end_date || '';
+});
+
+/* UPDATE */
+editCourseForm.addEventListener('submit', async function(e){
+    e.preventDefault();
+
+    const payload = {
+        name: editCourseName.value,
+        code: editCourseCode.value,
+        capacity: editCourseCapacity.value,
+        instructor: editCourseInstructor.value,
+        description: editCourseDescription.value,
+        start_date: editCourseStartDate.value,
+        end_date: editCourseEndDate.value,
+    };
+
+    await fetch(url(editCourseId.value,'update'), {
+        method:'POST',
+        headers:{
+            'Content-Type':'application/json',
+            'X-CSRFToken':getCookie('csrftoken')
+        },
+        body: JSON.stringify(payload)
+    });
+
+    location.reload();
+});
+
+/* DELETE */
+document.querySelectorAll('[data-action="delete-course"]').forEach(btn=>{
+    btn.onclick = async ()=>{
+        if(confirm('Delete?')){
+            await fetch(url(btn.dataset.id,'delete'), {
+                method:'POST',
+                headers:{'X-CSRFToken':getCookie('csrftoken')}
+            });
+            location.reload();
+        }
+    }
+});
+</script>
+
+{% endblock %}

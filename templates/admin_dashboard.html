@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+
+<style>
+
+/* REMOVE SCROLL */
+html, body{
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+/* Layout */
+.wrapper{
+    display: flex;
+    height: 100vh;
+}
+
+/* Sidebar */
+.sidebar{
+    width: 240px;
+    height: 100vh;
+    background: #1e293b;
+    color: white;
+    padding: 20px;
+}
+
+.sidebar h4{
+    margin-bottom: 30px;
+    font-weight: bold;
+}
+
+.sidebar a{
+    display: block;
+    color: #cbd5e1;
+    padding: 10px;
+    border-radius: 10px;
+    text-decoration: none;
+    margin-bottom: 10px;
+    transition: 0.3s;
+}
+
+.sidebar a:hover,
+.sidebar a.active{
+    background: #2563eb;
+    color: white;
+}
+
+/* Main */
+.main{
+    flex: 1;
+    height: 100vh;
+    padding: 30px;
+    background: #f1f5f9;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;  /* ✅ TOP ALIGN */
+}
+
+/* Cards */
+.dashboard-card{
+    border-radius: 15px;
+    padding: 25px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    transition: 0.3s;
+    animation: fadeUp .5s ease;
+}
+
+.dashboard-card:hover{
+    transform: translateY(-6px) scale(1.02);
+}
+
+/* Colors */
+.bg-blue{ background: #0ea5e9; }
+.bg-green{ background: #22c55e; }
+.bg-yellow{ background: #f59e0b; }
+.bg-red{ background: #ef4444; }
+
+/* Icon */
+.card-icon{
+    font-size: 45px;
+    opacity: 0.25;
+    position: absolute;
+    right: 15px;
+    bottom: 10px;
+}
+
+/* Text */
+.dashboard-card h2{
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* Animation */
+@keyframes fadeUp{
+    from{
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
+
+</style>
+
+<div class="wrapper">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h4>Course Panel</h4>
+
+        <a href="{% url 'dashboard' %}" class="active">Dashboard</a>
+        <a href="{% url 'users' %}">Students</a>
+        <a href="{% url 'courses' %}">Courses</a>
+        <a href="{% url 'enrollments' %}">Enrollments</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+
+        <!-- ✅ FIXED TITLE -->
+        <h3 class="mb-4 fw-bold">Admin Dashboard</h3>
+
+        <div class="row g-4">
+
+            <!-- Users -->
+            <div class="col-md-3">
+                <a href="{% url 'users' %}" class="text-decoration-none">
+                    <div class="dashboard-card bg-blue">
+                        <h2>{{ registered_users_count_value }}</h2>
+                        <p>Students</p>
+                        <i class="fa fa-users card-icon"></i>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Courses -->
+            <div class="col-md-3">
+                <a href="{% url 'courses' %}" class="text-decoration-none">
+                    <div class="dashboard-card bg-green">
+                        <h2>{{ courses_count }}</h2>
+                        <p>Courses</p>
+                        <i class="fa fa-book card-icon"></i>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Enrollments -->
+            <div class="col-md-3">
+                <a href="{% url 'enrollments' %}" class="text-decoration-none">
+                    <div class="dashboard-card bg-yellow">
+                        <h2>{{ enrolled_students_count_value }}</h2>
+                        <p>Enrollments</p>
+                        <i class="fa fa-user-check card-icon"></i>
+                    </div>
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

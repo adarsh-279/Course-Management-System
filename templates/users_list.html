@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% block title %}Registered Users | Course Management{% endblock %}
+
+{% block content %}
+
+<style>
+body {
+    background: linear-gradient(135deg, #eef2ff, #f8fafc);
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Header */
+.page-header {
+    animation: fadeDown .5s ease;
+}
+
+/* Card */
+.table-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+/* Table */
+.table {
+    margin-bottom: 0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table th,
+.table td {
+    border: 1px solid #e5e7eb;
+}
+
+.table tbody tr:hover {
+    background-color: #eef2ff;
+}
+
+/* Badge */
+.user-badge {
+    background: #eef2ff;
+    color: #4f46e5;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+/* Buttons */
+.btn-pill {
+    border-radius: 50px;
+    padding: 4px 10px;
+    font-size: 12px;
+}
+
+@keyframes fadeDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+</style>
+
+<div class="mb-4 page-header d-flex justify-content-between align-items-center">
+  <div>
+    <h2 class="fw-bold">Registered Students</h2>
+    <p class="text-muted">All registered students are listed below.</p>
+  </div>
+  <div>
+    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addStudentModal">+ Add Student</button>
+  </div>
+</div>
+
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Joined</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td><span class="user-badge">{{ user.username }}</span></td>
+          <td class="text-muted">{{ user.email }}</td>
+          <td>{{ user.date_joined|date:'d M Y' }}</td>
+          <td class="d-flex gap-2">
+            <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewStudentModal" data-id="{{ user.id }}">View</button>
+            <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editStudentModal" data-id="{{ user.id }}">Edit</button>
+            <button class="btn btn-danger btn-sm" data-action="delete-student" data-id="{{ user.id }}">Delete</button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center text-muted py-4">No students registered yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+
+    </table>
+  </div>
+</div>
+
+<!-- Student view modal -->
+<div class="modal fade" id="viewStudentModal" tabindex="-1" aria-labelledby="viewStudentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewStudentModalLabel">Student Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="viewStudentBody">Loading...</div>
+      <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editStudentModal" tabindex="-1" aria-labelledby="editStudentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editStudentModalLabel">Edit Student</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="editStudentForm">
+        <div class="modal-body">
+          <input type="hidden" id="editStudentId" name="student_id" />
+          <div class="mb-3"><label class="form-label">Username</label><input id="editStudentUsername" name="username" class="form-control" required /></div>
+          <div class="mb-3"><label class="form-label">Email</label><input id="editStudentEmail" name="email" class="form-control" required type="email" /></div>
+          <div class="mb-3"><label class="form-label">Enrolled Courses</label><ul id="editStudentCourses" class="list-group"></ul></div>
+          <div id="editStudentAlert" class="alert d-none"></div>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-warning">Save changes</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add Student Modal -->
+<div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addStudentModalLabel">Add Student</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="addStudentForm">
+        <div class="modal-body">
+          <div class="mb-3"><label class="form-label">Username</label><input id="addStudentUsername" name="username" class="form-control" required /></div>
+          <div class="mb-3"><label class="form-label">Email</label><input id="addStudentEmail" name="email" class="form-control" required type="email" /></div>
+          <div class="mb-3"><label class="form-label">Password</label><input id="addStudentPassword" name="password" class="form-control" required type="password" /></div>
+          <div id="addStudentAlert" class="alert d-none"></div>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-success">Add</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+function studentApiUrl(id) { return '{% url "student_detail_api" 0 %}'.replace('/0/', '/' + id + '/'); }
+function studentUpdateUrl(id) { return '{% url "student_update_api" 0 %}'.replace('/0/', '/' + id + '/'); }
+function studentDeleteUrl(id) { return '{% url "student_delete_api" 0 %}'.replace('/0/', '/' + id + '/'); }
+
+var viewStudentModal = document.getElementById('viewStudentModal');
+viewStudentModal.addEventListener('show.bs.modal', async function (event) {
+  const btn = event.relatedTarget;
+  const id = btn.getAttribute('data-id');
+  const data = await fetch(studentApiUrl(id)).then(r => r.json());
+  document.getElementById('viewStudentBody').innerHTML = `
+    <p><strong>Username:</strong> ${data.username}</p>
+    <p><strong>Email:</strong> ${data.email}</p>
+    <p><strong>Enrolled courses:</strong></p>
+    <ul>${data.enrolled_courses.map(c=>`<li>${c.course__name} (${c.course__code})</li>`).join('')}</ul>
+  `;
+});
+
+var editStudentModal = document.getElementById('editStudentModal');
+editStudentModal.addEventListener('show.bs.modal', async function (event) {
+  const btn = event.relatedTarget;
+  const id = btn.getAttribute('data-id');
+  const data = await fetch(studentApiUrl(id)).then(r => r.json());
+  document.getElementById('editStudentId').value = data.id;
+  document.getElementById('editStudentUsername').value = data.username;
+  document.getElementById('editStudentEmail').value = data.email;
+  document.getElementById('editStudentCourses').innerHTML = data.enrolled_courses.map(c=>`<li class="list-group-item">${c.course__name} (${c.course__code})</li>`).join('');
+  document.getElementById('editStudentAlert').classList.add('d-none');
+});
+
+document.getElementById('editStudentForm').addEventListener('submit', async function (e) {
+  e.preventDefault();
+  const id = document.getElementById('editStudentId').value;
+  const payload = {
+    username: document.getElementById('editStudentUsername').value,
+    email: document.getElementById('editStudentEmail').value,
+  };
+  const resp = await fetch(studentUpdateUrl(id), {
+    method: 'POST', headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')}, body: JSON.stringify(payload)
+  });
+  const result = await resp.json();
+  const alertEl = document.getElementById('editStudentAlert');
+  if (result.success) {
+    alertEl.className = 'alert alert-success';
+    alertEl.innerText = 'Student updated. Reload page to see changes.';
+    alertEl.classList.remove('d-none');
+  } else {
+    alertEl.className = 'alert alert-danger';
+    alertEl.innerText = 'Update failed';
+    alertEl.classList.remove('d-none');
+  }
+});
+
+document.getElementById('addStudentForm').addEventListener('submit', async function (e) {
+  e.preventDefault();
+  const payload = {
+    username: document.getElementById('addStudentUsername').value,
+    email: document.getElementById('addStudentEmail').value,
+    password: document.getElementById('addStudentPassword').value,
+  };
+  const resp = await fetch('{% url "student_create_api" %}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: JSON.stringify(payload)
+  });
+  const result = await resp.json();
+  const alertEl = document.getElementById('addStudentAlert');
+  if (result.success) {
+    alertEl.className = 'alert alert-success';
+    alertEl.innerText = 'Student added successfully. Reload page to see new user.';
+    alertEl.classList.remove('d-none');
+    setTimeout(function() { location.reload(); }, 1200);
+  } else {
+    alertEl.className = 'alert alert-danger';
+    alertEl.innerText = result.error || 'Add failed';
+    alertEl.classList.remove('d-none');
+  }
+});
+
+document.querySelectorAll('[data-action="delete-student"]').forEach(btn=> btn.addEventListener('click', async function () {
+  if (!confirm('Delete student? This cannot be undone.')) return;
+  const id = this.getAttribute('data-id');
+  await fetch(studentDeleteUrl(id), { method: 'POST', headers: {'X-CSRFToken': getCookie('csrftoken')} });
+  location.reload();
+}));
+</script>
+
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% block title %}Enrollments | Course Management{% endblock %}
+
+{% block content %}
+
+<style>
+
+/* Background */
+body {
+    background: #f4f6f9;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Page Header */
+.page-header {
+    margin-bottom: 20px;
+}
+
+.page-header h2 {
+    font-weight: 600;
+}
+
+/* Card */
+.table-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+}
+
+/* Table */
+.table {
+    margin-bottom: 0;
+}
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table th {
+    font-weight: 600;
+}
+
+.table tbody tr:hover {
+    background-color: #f1f5ff;
+}
+
+/* Buttons */
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 13px;
+}
+
+/* Header buttons */
+.action-btns {
+    display: flex;
+    gap: 10px;
+}
+
+</style>
+
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h2>Course Enrollments</h2>
+        <p class="text-muted">Manage students enrolled in courses</p>
+    </div>
+
+    <div class="action-btns">
+        <a href="{% url 'courses' %}" class="btn btn-success">+ Add Course</a>
+        <a href="{% url 'users' %}" class="btn btn-primary">View Users</a>
+    </div>
+</div>
+
+<div class="table-card">
+
+    <h5 class="mb-3">Registered Enrollments</h5>
+
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+
+            <thead>
+                <tr>
+                    <th>Course</th>
+                    <th>Code</th>
+                    <th>Student</th>
+                    <th>Email</th>
+                    <th>Enrolled On</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+    {% for course, enrolls in course_data.items %}
+        {% for e in enrolls %}
+        <tr>
+            <td>{{ e.course.name }}</td>
+            <td>{{ e.course.code }}</td>
+            <td>{{ e.student.username }}</td>
+            <td>{{ e.student.email }}</td>
+            <td>{{ e.enrolled_at|date:'d M Y H:i' }}</td>
+            <td>
+                <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewEnrollmentModal" data-id="{{ e.id }}">View</button>
+                <button class="btn btn-danger btn-sm" data-action="delete-enrollment" data-id="{{ e.id }}">Delete</button>
+            </td>
+        </tr>
+        {% endfor %}
+    {% empty %}
+    <tr>
+        <td colspan="6" class="text-center text-muted">
+            No enrollments found
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+
+        </table>
+    </div>
+
+</div>
+
+<!-- Enrollment modals -->
+<div class="modal fade" id="viewEnrollmentModal" tabindex="-1" aria-labelledby="viewEnrollmentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewEnrollmentModalLabel">Enrollment Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="viewEnrollmentBody">Loading...</div>
+      <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+function enrollmentApiUrl(id) { return '{% url "enrollment_detail_api" 0 %}'.replace('/0/', '/' + id + '/'); }
+function enrollmentDeleteUrl(id) { return '{% url "enrollment_delete_api" 0 %}'.replace('/0/', '/' + id + '/'); }
+
+const viewEnrollment = document.getElementById('viewEnrollmentModal');
+viewEnrollment.addEventListener('show.bs.modal', async function (event) {
+  const button = event.relatedTarget;
+  const id = button.getAttribute('data-id');
+  const data = await fetch(enrollmentApiUrl(id)).then(r => r.json());
+  document.getElementById('viewEnrollmentBody').innerHTML = `
+    <p><strong>Student:</strong> ${data.student.username} (${data.student.email})</p>
+    <p><strong>Course:</strong> ${data.course.name} (${data.course.code})</p>
+    <p><strong>Enrolled On:</strong> ${data.enrolled_at}</p>
+  `;
+});
+
+document.querySelectorAll('[data-action="delete-enrollment"]').forEach(button => {
+  button.addEventListener('click', async function () {
+    if (!confirm('Confirm deletion of this enrollment?')) return;
+    const id = this.getAttribute('data-id');
+    await fetch(enrollmentDeleteUrl(id), { method: 'POST', headers: {'X-CSRFToken': getCookie('csrftoken')} });
+    location.reload();
+  });
+});
+</script>
+
+{% endblock %}

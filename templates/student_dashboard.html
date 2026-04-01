@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}Student Dashboard | Course Management{% endblock %}
+
+{% block content %}
+
+<style>
+
+/* Page Header */
+.page-header {
+    margin-bottom: 20px;
+}
+
+.page-header h2 {
+    font-weight: 600;
+}
+
+/* Card */
+.table-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+}
+
+/* Table */
+.table {
+    margin-bottom: 0;
+}
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table th {
+    font-weight: 600;
+}
+
+/* Hover */
+.table tbody tr:hover {
+    background-color: #f1f5ff;
+}
+
+/* Buttons */
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 13px;
+}
+
+</style>
+
+<!-- Header -->
+<div class="page-header">
+    <h2>Welcome back, {{ request.user.username }}!</h2>
+    <p class="text-muted">Here are your enrolled courses</p>
+</div>
+
+<div class="table-card">
+
+{% if enrollments %}
+
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Course</th>
+                    <th>Code</th>
+                    <th>Enrolled On</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for e in enrollments %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ e.course.name }}</td>
+                    <td>{{ e.course.code }}</td>
+                    <td>{{ e.enrolled_at|date:'d M Y' }}</td>
+
+                    <td>
+                        <!-- View -->
+                        <a href="/courses/{{ e.course.id }}/" class="btn btn-info btn-sm">
+                            View
+                        </a>
+
+                        <!-- Leave -->
+                        <a href="/leave-course/{{ e.course.id }}/" class="btn btn-danger btn-sm">
+                            Leave
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+
+{% else %}
+
+    <div class="text-center p-4">
+        <h5>No Courses Yet</h5>
+        <p class="text-muted">You haven’t enrolled in any courses.</p>
+
+        <a href="/courses/" class="btn btn-primary">
+            Browse Courses
+        </a>
+    </div>
+
+{% endif %}
+
+</div>
+
+{% endblock %}
