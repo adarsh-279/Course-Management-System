@@ -98,11 +98,9 @@ body {
             <td>{{ e.student.username }}</td>
             <td>{{ e.student.email }}</td>
             <td>{{ e.enrolled_at|date:'d M Y H:i' }}</td>
-
             <td>
-                <a href="#" class="btn btn-info btn-sm">View</a>
-                <a href="#" class="btn btn-primary btn-sm">Edit</a>
-                <a href="#" class="btn btn-danger btn-sm">Delete</a>
+                <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewEnrollmentModal" data-id="{{ e.id }}">View</button>
+                <button class="btn btn-danger btn-sm" data-action="delete-enrollment" data-id="{{ e.id }}">Delete</button>
             </td>
         </tr>
         {% endfor %}
@@ -119,5 +117,60 @@ body {
     </div>
 
 </div>
+
+<!-- Enrollment modals -->
+<div class="modal fade" id="viewEnrollmentModal" tabindex="-1" aria-labelledby="viewEnrollmentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewEnrollmentModalLabel">Enrollment Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="viewEnrollmentBody">Loading...</div>
+      <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+function enrollmentApiUrl(id) { return '{% url "enrollment_detail_api" 0 %}'.replace('/0/', '/' + id + '/'); }
+function enrollmentDeleteUrl(id) { return '{% url "enrollment_delete_api" 0 %}'.replace('/0/', '/' + id + '/'); }
+
+const viewEnrollment = document.getElementById('viewEnrollmentModal');
+viewEnrollment.addEventListener('show.bs.modal', async function (event) {
+  const button = event.relatedTarget;
+  const id = button.getAttribute('data-id');
+  const data = await fetch(enrollmentApiUrl(id)).then(r => r.json());
+  document.getElementById('viewEnrollmentBody').innerHTML = `
+    <p><strong>Student:</strong> ${data.student.username} (${data.student.email})</p>
+    <p><strong>Course:</strong> ${data.course.name} (${data.course.code})</p>
+    <p><strong>Enrolled On:</strong> ${data.enrolled_at}</p>
+  `;
+});
+
+document.querySelectorAll('[data-action="delete-enrollment"]').forEach(button => {
+  button.addEventListener('click', async function () {
+    if (!confirm('Confirm deletion of this enrollment?')) return;
+    const id = this.getAttribute('data-id');
+    await fetch(enrollmentDeleteUrl(id), { method: 'POST', headers: {'X-CSRFToken': getCookie('csrftoken')} });
+    location.reload();
+  });
+});
+</script>
 
 {% endblock %}

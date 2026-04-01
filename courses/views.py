@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotAllowed
 from .models import Course, Enrollment
 from .forms import RegisterForm, CourseForm
 from django.contrib.auth.models import User
@@ -114,11 +115,158 @@ def user_list(request):
         'users': users,
     })
 
-    courses = Course.objects.all()
-    return render(request, 'course_list.html', {
-        'courses': courses,
-        'is_admin': request.user.is_staff,
+
+@login_required
+def course_detail_json(request, course_id):
+    step = request.GET.get('step', 'view')
+    course = get_object_or_404(Course, id=course_id)
+    data = {
+        'id': course.id,
+        'name': course.name,
+        'code': course.code,
+        'description': course.description,
+        'capacity': course.capacity,
+        'instructor': course.instructor or '',
+    }
+    return JsonResponse(data)
+
+
+import json
+
+@login_required
+def course_update(request, course_id):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    if not request.user.is_staff:
+        return HttpResponseBadRequest('Not allowed')
+
+    course = get_object_or_404(Course, id=course_id)
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest('Invalid JSON')
+
+    form = CourseForm(payload, instance=course)
+    if form.is_valid():
+        form.save()
+        return JsonResponse({'success': True, 'message': 'Course updated'})
+    return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
+
+@login_required
+def course_delete(request, course_id):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    if not request.user.is_staff:
+        return HttpResponseBadRequest('Not allowed')
+
+    course = get_object_or_404(Course, id=course_id)
+    course.delete()
+    return JsonResponse({'success': True, 'message': 'Course deleted'})
+
+
+@login_required
+def student_detail_json(request, user_id):
+    student = get_object_or_404(User, id=user_id, is_staff=False)
+    enrolled_courses = list(student.enrollment_set.select_related('course').values('course__id', 'course__name', 'course__code'))
+    return JsonResponse({
+        'id': student.id,
+        'username': student.username,
+        'email': student.email,
+        'enrolled_courses': enrolled_courses,
     })
+
+
+@login_required
+def student_update(request, user_id):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    if not request.user.is_staff:
+        return HttpResponseBadRequest('Not allowed')
+
+    student = get_object_or_404(User, id=user_id, is_staff=False)
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest('Invalid JSON')
+
+    student.username = payload.get('username', student.username)
+    student.email = payload.get('email', student.email)
+    student.save()
+    return JsonResponse({'success': True})
+
+
+@login_required
+def student_delete(request, user_id):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    if not request.user.is_staff:
+        return HttpResponseBadRequest('Not allowed')
+
+    student = get_object_or_404(User, id=user_id, is_staff=False)
+    student.delete()
+    return JsonResponse({'success': True})
+
+
+@login_required
+def student_create(request):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    if not request.user.is_staff:
+        return HttpResponseBadRequest('Not allowed')
+
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest('Invalid JSON')
+
+    username = payload.get('username')
+    email = payload.get('email')
+    password = payload.get('password')
+
+    if not username or not email or not password:
+        return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
+
+    if User.objects.filter(username=username).exists():
+        return JsonResponse({'success': False, 'error': 'Username already exists'}, status=400)
+
+    student = User.objects.create_user(username=username, email=email, password=password)
+    student.is_staff = False
+    student.save()
+    return JsonResponse({'success': True, 'id': student.id})
+
+
+@login_required
+def enrollment_detail_json(request, enrollment_id):
+    enrollment = get_object_or_404(Enrollment, id=enrollment_id)
+    return JsonResponse({
+        'id': enrollment.id,
+        'student': {
+            'id': enrollment.student.id,
+            'username': enrollment.student.username,
+            'email': enrollment.student.email,
+        },
+        'course': {
+            'id': enrollment.course.id,
+            'name': enrollment.course.name,
+            'code': enrollment.course.code,
+        },
+        'enrolled_at': enrollment.enrolled_at.strftime('%Y-%m-%d %H:%M:%S'),
+    })
+
+
+@login_required
+def enrollment_delete(request, enrollment_id):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+    if not request.user.is_staff:
+        return HttpResponseBadRequest('Not allowed')
+
+    enrollment = get_object_or_404(Enrollment, id=enrollment_id)
+    enrollment.delete()
+    return JsonResponse({'success': True})
 
 
 @login_required

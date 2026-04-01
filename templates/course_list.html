@@ -62,7 +62,7 @@ body {
 <!-- Header -->
 <div class="mb-4 d-flex justify-content-between align-items-center page-header">
     <div>
-        <h2 class="fw-bold">📚 Courses</h2>
+        <h2 class="fw-bold">Courses</h2>
         <p class="text-muted">Manage courses easily.</p>
     </div>
 
@@ -82,10 +82,10 @@ body {
 
             <thead>
                 <tr>
-                    <th>Course Name</th>
+                    <th>Name</th>
                     <th>Code</th>
-                    <th>Description</th>
                     <th>Capacity</th>
+                    <th>Instructor</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -95,60 +95,25 @@ body {
                 <tr>
                     <td class="fw-semibold">{{ course.name }}</td>
                     <td>{{ course.code }}</td>
-
-                    <td class="text-muted">
-                        {{ course.description|truncatewords:10 }}
-                    </td>
-
-                    <td>
-                        👥 {{ course.capacity }}
-                    </td>
-
+                    <td>{{ course.capacity }}</td>
+                    <td>{{ course.instructor|default:'-' }}</td>
                     <td class="d-flex gap-2">
-
-                        {% if is_admin %}
-                        
-                        <!-- VIEW -->
-                        <a href="{% url 'courses' %}" 
-                           class="btn btn-info btn-sm ">
-                            View
-                        </a>
-
-                        <!-- EDIT -->
-                        <a href="/courses/edit/{{ course.id }}/" 
-                           class="btn btn-primary btn-sm ">
-                            Edit
-                        </a>
-
-                        <!-- DELETE -->
-                        <a href="{% url 'course_delete' course.id %}" 
-                           class="btn btn-danger btn-sm">
-                            Delete
-                        </a>
-
+                        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewCourseModal" data-id="{{ course.id }}">View</button>
+                        {% if request.user.is_staff %}
+                          <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editCourseModal" data-id="{{ course.id }}">Edit</button>
+                          <button class="btn btn-danger btn-sm" data-action="delete-course" data-id="{{ course.id }}">Delete</button>
                         {% else %}
-
-                            {% if course.id in enrolled_course_ids %}
-                                <button class="btn btn-secondary btn-sm " disabled>
-                                    ✔ Enrolled
-                                </button>
-                            {% else %}
-                                <a href="{% url 'enroll' course.id %}" 
-                                   class="btn btn-success btn-sm ">
-                                    Enroll
-                                </a>
-                            {% endif %}
-
+                          {% if course.id in enrolled_course_ids %}
+                            <button class="btn btn-secondary btn-sm" disabled>Enrolled</button>
+                          {% else %}
+                            <a class="btn btn-success btn-sm" href="{% url 'enroll' course.id %}">Enroll</a>
+                          {% endif %}
                         {% endif %}
-
                     </td>
                 </tr>
-
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="text-center text-muted">
-                        No courses found.
-                    </td>
+                    <td colspan="5" class="text-center text-muted">No courses found.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -156,5 +121,174 @@ body {
         </table>
     </div>
 </div>
+
+<!-- Modals -->
+<div class="modal fade" id="viewCourseModal" tabindex="-1" aria-labelledby="viewCourseModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewCourseModalLabel">Course Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="viewCourseBody">Loading...</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editCourseModal" tabindex="-1" aria-labelledby="editCourseModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editCourseModalLabel">Edit Course</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="editCourseForm">
+        <div class="modal-body">
+          <input type="hidden" id="editCourseId" name="course_id" />
+          <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input class="form-control" id="editCourseName" name="name" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Code</label>
+            <input class="form-control" id="editCourseCode" name="code" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Capacity</label>
+            <input class="form-control" type="number" min="1" id="editCourseCapacity" name="capacity" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Instructor</label>
+            <input class="form-control" id="editCourseInstructor" name="instructor" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" id="editCourseDescription" name="description" rows="3"></textarea>
+          </div>
+          <div id="editCourseAlert" class="alert d-none" role="alert"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-warning">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+async function apiCourse(url, options = {}) {
+  const response = await fetch(url, options);
+  if (!response.ok) throw new Error('API error');
+  return response.json();
+}
+
+function courseApiUrl(slug) {
+  return '{% url "course_detail_api" 0 %}'.replace('/0/', '/' + slug + '/');
+}
+function courseUpdateUrl(slug) {
+  return '{% url "course_update_api" 0 %}'.replace('/0/', '/' + slug + '/');
+}
+function courseDeleteUrl(slug) {
+  return '{% url "course_delete_api" 0 %}'.replace('/0/', '/' + slug + '/');
+}
+
+var viewModalEl = document.getElementById('viewCourseModal');
+viewModalEl.addEventListener('show.bs.modal', async function (event) {
+  const button = event.relatedTarget;
+  const courseId = button.getAttribute('data-id');
+  const data = await apiCourse(courseApiUrl(courseId));
+  const body = document.getElementById('viewCourseBody');
+  body.innerHTML = `
+    <ul class="list-group">
+      <li class="list-group-item"><strong>Name:</strong> ${data.name}</li>
+      <li class="list-group-item"><strong>Code:</strong> ${data.code}</li>
+      <li class="list-group-item"><strong>Capacity:</strong> ${data.capacity}</li>
+      <li class="list-group-item"><strong>Instructor:</strong> ${data.instructor || '-'} </li>
+      <li class="list-group-item"><strong>Description:</strong> ${data.description || '-'} </li>
+    </ul>
+  `;
+});
+
+var editModalEl = document.getElementById('editCourseModal');
+editModalEl.addEventListener('show.bs.modal', async function (event) {
+  const button = event.relatedTarget;
+  const courseId = button.getAttribute('data-id');
+  const data = await apiCourse(courseApiUrl(courseId));
+  document.getElementById('editCourseId').value = data.id;
+  document.getElementById('editCourseName').value = data.name;
+  document.getElementById('editCourseCode').value = data.code;
+  document.getElementById('editCourseCapacity').value = data.capacity;
+  document.getElementById('editCourseInstructor').value = data.instructor;
+  document.getElementById('editCourseDescription').value = data.description;
+  document.getElementById('editCourseAlert').classList.add('d-none');
+});
+
+document.getElementById('editCourseForm').addEventListener('submit', async function (e) {
+  e.preventDefault();
+  const id = document.getElementById('editCourseId').value;
+  const payload = {
+    name: document.getElementById('editCourseName').value,
+    code: document.getElementById('editCourseCode').value,
+    capacity: document.getElementById('editCourseCapacity').value,
+    instructor: document.getElementById('editCourseInstructor').value,
+    description: document.getElementById('editCourseDescription').value,
+  };
+
+  try {
+    const result = await apiCourse(courseUpdateUrl(id), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify(payload)
+    });
+    const alertBox = document.getElementById('editCourseAlert');
+    alertBox.className = 'alert alert-success';
+    alertBox.textContent = 'Saved successfully. Reload to show updated table.';
+    alertBox.classList.remove('d-none');
+  } catch (err) {
+    const alertBox = document.getElementById('editCourseAlert');
+    alertBox.className = 'alert alert-danger';
+    alertBox.textContent = 'Update failed.';
+    alertBox.classList.remove('d-none');
+  }
+});
+
+document.querySelectorAll('[data-action="delete-course"]').forEach(btn => {
+  btn.addEventListener('click', async function () {
+    if (!confirm('Are you sure to delete this course?')) return;
+    const id = this.getAttribute('data-id');
+    try {
+      await apiCourse(courseDeleteUrl(id), {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCookie('csrftoken')}
+      });
+      window.location.reload();
+    } catch (err) {
+      alert('Delete failed.');
+    }
+  });
+});
+</script>
 
 {% endblock %}

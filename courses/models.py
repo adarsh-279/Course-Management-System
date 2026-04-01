@@ -16,6 +16,7 @@ class Course(models.Model):
     code = models.CharField(max_length=20)
     description = models.TextField()
     capacity = models.IntegerField(default=30)
+    instructor = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.name

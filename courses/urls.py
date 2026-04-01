@@ -20,4 +20,17 @@ urlpatterns = [
     path('my-courses/', views.my_courses, name='my_courses'),
     path('enrollments/', views.enrollment_list, name='enrollments'),
     path('users/', views.user_list, name='users'),
+
+    # AJAX modal endpoints
+    path('api/courses/<int:course_id>/', views.course_detail_json, name='course_detail_api'),
+    path('api/courses/<int:course_id>/update/', views.course_update, name='course_update_api'),
+    path('api/courses/<int:course_id>/delete/', views.course_delete, name='course_delete_api'),
+
+    path('api/students/<int:user_id>/', views.student_detail_json, name='student_detail_api'),
+    path('api/students/<int:user_id>/update/', views.student_update, name='student_update_api'),
+    path('api/students/<int:user_id>/delete/', views.student_delete, name='student_delete_api'),
+    path('api/students/create/', views.student_create, name='student_create_api'),
+
+    path('api/enrollments/<int:enrollment_id>/', views.enrollment_detail_json, name='enrollment_detail_api'),
+    path('api/enrollments/<int:enrollment_id>/delete/', views.enrollment_delete, name='enrollment_delete_api'),
 ]

@@ -14,7 +14,7 @@ class RegisterForm(forms.ModelForm):
 class CourseForm(forms.ModelForm):
     class Meta:
         model = Course
-        fields = ['name', 'code', 'description', 'capacity']
+        fields = ['name', 'code', 'description', 'capacity', 'instructor']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
         }

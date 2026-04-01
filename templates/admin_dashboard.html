@@ -113,7 +113,7 @@ html, body{
         <h4>Course Panel</h4>
 
         <a href="{% url 'dashboard' %}" class="active">Dashboard</a>
-        <a href="{% url 'users' %}">Users</a>
+        <a href="{% url 'users' %}">Students</a>
         <a href="{% url 'courses' %}">Courses</a>
         <a href="{% url 'enrollments' %}">Enrollments</a>
     </div>
@@ -131,7 +131,7 @@ html, body{
                 <a href="{% url 'users' %}" class="text-decoration-none">
                     <div class="dashboard-card bg-blue">
                         <h2>{{ registered_users_count_value }}</h2>
-                        <p>Users</p>
+                        <p>Students</p>
                         <i class="fa fa-users card-icon"></i>
                     </div>
                 </a>
