@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotAllowed
 from .models import Course, Enrollment
 from .forms import RegisterForm, CourseForm
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
 
 
 def home(request):
@@ -130,6 +130,22 @@ def course_detail_json(request, course_id):
     }
     return JsonResponse(data)
 
+@login_required
+def course_detail(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    return render(request, 'course_detail.html', {'course': course})
+
+@login_required
+def leave_course(request, course_id):
+    enrollment = Enrollment.objects.filter(
+        student=request.user,
+        course_id=course_id
+    ).first()
+
+    if enrollment:
+        enrollment.delete()
+
+    return redirect('my_courses')
 
 import json
 
@@ -311,3 +327,36 @@ def my_courses(request):
     return render(request, 'student_dashboard.html', {
         'enrollments': enrollments
     })
+
+def login_view(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        user = None
+
+        # ✅ safer: filter instead of get
+        user_obj = User.objects.filter(email=email).first()
+
+        if user_obj:
+            user = authenticate(
+                request,
+                username=user_obj.username,
+                password=password
+            )
+
+        if user is not None:
+            login(request, user)
+
+            # ✅ DEBUG print (check terminal)
+            print("LOGIN SUCCESS")
+
+            return redirect('dashboard')   # make sure this exists
+        else:
+            print("LOGIN FAILED")  # check terminal
+
+            return render(request, 'login.html', {
+                'error': 'Invalid email or password'
+            })
+
+    return render(request, 'login.html')
