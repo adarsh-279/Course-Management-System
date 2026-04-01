@@ -4,41 +4,53 @@
 {% block content %}
 
 <style>
+body {
+    background: linear-gradient(135deg, #eef2ff, #f8fafc);
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Header */
 .page-header {
     animation: fadeInDown .5s ease;
 }
 
-.app-card {
+/* Card wrapper */
+.table-card {
     background: #fff;
     border-radius: 18px;
     padding: 20px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-    transition: 0.3s ease;
-    animation: fadeUp .5s ease;
 }
 
-.app-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+/* Table */
+.table {
+    margin-bottom: 0;
+    border-radius: 10px;
+    overflow: hidden;
 }
 
+.table thead {
+    background: #f8f9fa;
+}
+
+/* Borders */
+.table th,
+.table td {
+    border: 1px solid #e5e7eb;
+}
+
+/* Hover */
+.table tbody tr:hover {
+    background-color: #eef2ff;
+}
+
+/* Button */
 .btn-pill {
     border-radius: 50px;
-    padding: 6px 15px;
+    padding: 5px 12px;
 }
 
-.badge {
-    border-radius: 20px;
-    padding: 6px 10px;
-}
-
-@keyframes fadeUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-}
-
+/* Animation */
 @keyframes fadeInDown {
     from {
         opacity: 0;
@@ -47,71 +59,102 @@
 }
 </style>
 
+<!-- Header -->
 <div class="mb-4 d-flex justify-content-between align-items-center page-header">
     <div>
-        <h2 class="fw-bold">Courses</h2>
-        <p class="text-muted">Browse available courses and enroll in one click.</p>
-
-        {% if special_note %}
-            <small class="text-success fw-semibold">{{ special_note }}</small>
-        {% endif %}
+        <h2 class="fw-bold">📚 Courses</h2>
+        <p class="text-muted">Manage courses easily.</p>
     </div>
 
     {% if is_admin %}
     <div>
-        <a href="/courses/create/" class="btn btn-primary btn-pill shadow-sm">
+        <a href="{% url 'course_create' %}" class="btn btn-primary btn-pill">
             + Create Course
         </a>
     </div>
     {% endif %}
 </div>
 
-<div class="row g-4">
-{% for course in courses %}
-    <div class="col-md-4">
-        <div class="app-card h-100 d-flex flex-column justify-content-between">
+<!-- Table -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
 
-            <div>
-                <h5 class="fw-semibold">{{ course.name }}</h5>
-                <p class="text-muted mb-1">{{ course.code }}</p>
-                <p class="small text-muted">
-                    {{ course.description|truncatewords:20 }}
-                </p>
-            </div>
+            <thead>
+                <tr>
+                    <th>Course Name</th>
+                    <th>Code</th>
+                    <th>Description</th>
+                    <th>Capacity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
 
-            <div class="d-flex justify-content-between align-items-center mt-3">
-                <span class="badge bg-primary">
-                    👥 {{ course.capacity }}
-                </span>
+            <tbody>
+                {% for course in courses %}
+                <tr>
+                    <td class="fw-semibold">{{ course.name }}</td>
+                    <td>{{ course.code }}</td>
 
-                {% if is_admin %}
-                    <a class="btn btn-sm btn-danger btn-pill"
-                       href="/courses/delete/{{ course.id }}/">
-                        Delete
-                    </a>
-                {% else %}
-                    {% if course.id in enrolled_course_ids %}
-                        <button class="btn btn-sm btn-secondary btn-pill" disabled>
-                            Enrolled
-                        </button>
-                    {% else %}
-                        <a class="btn btn-sm btn-success btn-pill"
-                           href="/enroll/{{ course.id }}/">
-                            Enroll
+                    <td class="text-muted">
+                        {{ course.description|truncatewords:10 }}
+                    </td>
+
+                    <td>
+                        👥 {{ course.capacity }}
+                    </td>
+
+                    <td class="d-flex gap-2">
+
+                        {% if is_admin %}
+                        
+                        <!-- VIEW -->
+                        <a href="{% url 'courses' %}" 
+                           class="btn btn-info btn-sm ">
+                            View
                         </a>
-                    {% endif %}
-                {% endif %}
-            </div>
 
-        </div>
+                        <!-- EDIT -->
+                        <a href="/courses/edit/{{ course.id }}/" 
+                           class="btn btn-primary btn-sm ">
+                            Edit
+                        </a>
+
+                        <!-- DELETE -->
+                        <a href="{% url 'course_delete' course.id %}" 
+                           class="btn btn-danger btn-sm">
+                            Delete
+                        </a>
+
+                        {% else %}
+
+                            {% if course.id in enrolled_course_ids %}
+                                <button class="btn btn-secondary btn-sm " disabled>
+                                    ✔ Enrolled
+                                </button>
+                            {% else %}
+                                <a href="{% url 'enroll' course.id %}" 
+                                   class="btn btn-success btn-sm ">
+                                    Enroll
+                                </a>
+                            {% endif %}
+
+                        {% endif %}
+
+                    </td>
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted">
+                        No courses found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
     </div>
-{% empty %}
-    <div class="col-12">
-        <div class="app-card text-center">
-            <p class="mb-0">No courses found. Please check back later.</p>
-        </div>
-    </div>
-{% endfor %}
 </div>
 
 {% endblock %}
