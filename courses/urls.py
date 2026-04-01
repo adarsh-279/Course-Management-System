@@ -8,13 +8,14 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
 
     # Auth
-    path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
+    path('login/', views.login_view, name='login'),    path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
     path('register/', views.register, name='register'),
 
     # Pages
     path('courses/', views.course_list, name='courses'),
     path('courses/create/', views.create_course, name='course_create'),
+    path('courses/<int:course_id>/', views.course_detail, name='course_detail'),
+    path('leave-course/<int:course_id>/', views.leave_course, name='leave_course'),
     path('courses/delete/<int:course_id>/', views.delete_course, name='course_delete'),
     path('enroll/<int:course_id>/', views.enroll, name='enroll'),
     path('my-courses/', views.my_courses, name='my_courses'),

@@ -14,7 +14,9 @@ class RegisterForm(forms.ModelForm):
 class CourseForm(forms.ModelForm):
     class Meta:
         model = Course
-        fields = ['name', 'code', 'description', 'capacity', 'instructor']
+        fields = ['name', 'code', 'instructor', 'description', 'capacity', 'start_date', 'end_date']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'type': 'date'}),
         }
