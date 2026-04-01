@@ -56,6 +56,7 @@ A full-stack Django-based web application that allows administrators to manage c
   ✅ **Solution:** Extended model with instructor & date fields  
 
 ---
+
 ## 🔮 Future Scope
 
 - 🔍 Course search & filtering  
