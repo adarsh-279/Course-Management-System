@@ -1,55 +1,53 @@
 {% extends 'base.html' %}
 {% block title %}Login | Course Management{% endblock %}
-
 {% block content %}
-
 <style>
-.login-wrapper {
+  .login-wrapper {
     min-height: 80vh;
     display: flex;
     align-items: center;
     justify-content: center;
-}
+  }
 
-.app-card {
+  .app-card {
     background: #fff;
     border-radius: 20px;
     padding: 40px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
-    animation: fadeUp .6s ease;
-}
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+    animation: fadeUp 0.6s ease;
+  }
 
-.form-control {
+  .form-control {
     border-radius: 12px;
     padding: 10px;
     transition: 0.3s;
-}
+  }
 
-.form-control:focus {
-    box-shadow: 0 0 0 2px rgba(99,102,241,0.2);
+  .form-control:focus {
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
     border-color: #6366f1;
-}
+  }
 
-.btn-pill {
+  .btn-pill {
     border-radius: 50px;
     padding: 10px;
-}
+  }
 
-.btn-primary {
+  .btn-primary {
     background: linear-gradient(135deg, #4f46e5, #6366f1);
     border: none;
-}
+  }
 
-.btn-primary:hover {
+  .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(99,102,241,0.4);
-}
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+  }
 
-.login-title {
+  .login-title {
     font-weight: 600;
-}
+  }
 
-.bg-blur {
+  .bg-blur {
     position: absolute;
     width: 250px;
     height: 250px;
@@ -59,9 +57,9 @@
     top: 20%;
     left: 30%;
     z-index: -1;
-}
+  }
 
-.error-box {
+  .error-box {
     background: #fee2e2;
     color: #991b1b;
     padding: 10px;
@@ -69,71 +67,69 @@
     font-size: 14px;
     margin-bottom: 15px;
     text-align: center;
-}
+  }
 
-@keyframes fadeUp {
+  @keyframes fadeUp {
     from {
-        opacity: 0;
-        transform: translateY(25px);
+      opacity: 0;
+      transform: translateY(25px);
     }
-}
+  }
 </style>
 
 <div class="login-wrapper position-relative">
+  <!-- Background glow -->
+  <div class="bg-blur"></div>
 
-    <!-- Background glow -->
-    <div class="bg-blur"></div>
+  <div class="col-md-5 col-lg-4">
+    <div class="app-card">
+      <h3 class="text-center mb-4 login-title">Login</h3>
 
-    <div class="col-md-5 col-lg-4">
-        <div class="app-card">
+      <!-- ✅ Error Alert -->
+      {% if error %}
+      <div class="error-box">{{ error }}</div>
 
-            <h3 class="text-center mb-4 login-title">Login</h3>
+      <script>
+        alert("{{ error }}");
+      </script>
+      {% endif %}
 
-            <!-- ✅ Error Alert -->
-            {% if error %}
-                <div class="error-box">
-                    {{ error }}
-                </div>
+      <form method="post" novalidate>
+        {% csrf_token %}
 
-                <script>
-                    alert("{{ error }}");
-                </script>
-            {% endif %}
-
-            <form method="post" novalidate>
-                {% csrf_token %}
-
-                <!-- ✅ EMAIL FIELD -->
-                <div class="mb-3">
-                    <input type="email" name="email"
-                           class="form-control"
-                           placeholder="Email"
-                           required>
-                </div>
-
-                <!-- PASSWORD -->
-                <div class="mb-3">
-                    <input type="password" name="password"
-                           class="form-control"
-                           placeholder="Password"
-                           required>
-                </div>
-
-                <button class="btn btn-primary btn-pill w-100">
-                    Login
-                </button>
-            </form>
-
-            <div class="text-center mt-3">
-                <small class="text-muted">
-                    New user?
-                    <a href="/register/" class="fw-semibold">Create an account</a>
-                </small>
-            </div>
-
+        <!-- ✅ USERNAME FIELD -->
+        <div class="mb-3">
+          <input
+            type="text"
+            name="username"
+            class="form-control"
+            placeholder="Username"
+            required
+          />
         </div>
-    </div>
 
+        <!-- PASSWORD -->
+        <div class="mb-3">
+          <input
+            type="password"
+            name="password"
+            class="form-control"
+            placeholder="Password"
+            required
+          />
+        </div>
+
+        <button class="btn btn-primary btn-pill w-100">Login</button>
+      </form>
+
+      <div class="text-center mt-3">
+        <small class="text-muted">
+          New user?
+          <a href="/register/" class="fw-semibold">Create an account</a>
+        </small>
+      </div>
+    </div>
+  </div>
 </div>
 
 {% endblock %}

@@ -330,33 +330,17 @@ def my_courses(request):
 
 def login_view(request):
     if request.method == "POST":
-        email = request.POST.get("email")
+        username = request.POST.get("username")
         password = request.POST.get("password")
 
-        user = None
-
-        # ✅ safer: filter instead of get
-        user_obj = User.objects.filter(email=email).first()
-
-        if user_obj:
-            user = authenticate(
-                request,
-                username=user_obj.username,
-                password=password
-            )
+        user = authenticate(request, username=username, password=password)
 
         if user is not None:
             login(request, user)
+            return redirect('dashboard')
 
-            # ✅ DEBUG print (check terminal)
-            print("LOGIN SUCCESS")
-
-            return redirect('dashboard')   # make sure this exists
-        else:
-            print("LOGIN FAILED")  # check terminal
-
-            return render(request, 'login.html', {
-                'error': 'Invalid email or password'
-            })
+        return render(request, 'login.html', {
+            'error': 'Invalid username or password'
+        })
 
     return render(request, 'login.html')

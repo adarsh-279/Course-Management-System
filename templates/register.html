@@ -1,59 +1,57 @@
 {% extends 'base.html' %}
 {% block title %}Register | Course Management{% endblock %}
-
 {% block content %}
-
 <style>
-.register-wrapper {
+  .register-wrapper {
     min-height: 80vh;
     display: flex;
     align-items: center;
     justify-content: center;
-}
+  }
 
-.app-card {
+  .app-card {
     background: #fff;
     border-radius: 20px;
     padding: 40px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
-    animation: fadeUp .6s ease;
-}
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+    animation: fadeUp 0.6s ease;
+  }
 
-.form-control {
+  .form-control {
     border-radius: 12px;
     padding: 10px;
     transition: 0.3s;
-}
+  }
 
-.form-control:focus {
-    box-shadow: 0 0 0 2px rgba(99,102,241,0.2);
+  .form-control:focus {
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
     border-color: #6366f1;
-}
+  }
 
-select.form-control {
+  select.form-control {
     cursor: pointer;
-}
+  }
 
-.btn-pill {
+  .btn-pill {
     border-radius: 50px;
     padding: 10px;
-}
+  }
 
-.btn-primary {
+  .btn-primary {
     background: linear-gradient(135deg, #4f46e5, #6366f1);
     border: none;
-}
+  }
 
-.btn-primary:hover {
+  .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(99,102,241,0.4);
-}
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+  }
 
-.register-title {
+  .register-title {
     font-weight: 600;
-}
+  }
 
-.bg-blur {
+  .bg-blur {
     position: absolute;
     width: 250px;
     height: 250px;
@@ -63,9 +61,9 @@ select.form-control {
     top: 20%;
     right: 30%;
     z-index: -1;
-}
+  }
 
-.error-box {
+  .error-box {
     background: #fee2e2;
     color: #991b1b;
     padding: 10px;
@@ -73,83 +71,93 @@ select.form-control {
     font-size: 14px;
     margin-bottom: 15px;
     text-align: center;
-}
+  }
 
-@keyframes fadeUp {
+  @keyframes fadeUp {
     from {
-        opacity: 0;
-        transform: translateY(25px);
+      opacity: 0;
+      transform: translateY(25px);
     }
-}
+  }
 </style>
 
 <div class="register-wrapper position-relative">
+  <!-- Background glow -->
+  <div class="bg-blur"></div>
 
-    <!-- Background glow -->
-    <div class="bg-blur"></div>
+  <div class="col-md-5 col-lg-4">
+    <div class="app-card">
+      <h3 class="text-center mb-4 register-title">Create Account</h3>
 
-    <div class="col-md-5 col-lg-4">
-        <div class="app-card">
+      <!-- ✅ Error Handling -->
+      {% if error %}
+      <div class="error-box">{{ error }}</div>
 
-            <h3 class="text-center mb-4 register-title">
-                Create Account
-            </h3>
+      <script>
+        alert("{{ error }}");
+      </script>
+      {% endif %} {% if form.errors %}
+      <div class="error-box text-start">
+        <ul class="mb-0">
+          {% for field, errors in form.errors.items %} {% for error in errors %}
+          <li>{{ error }}</li>
+          {% endfor %} {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
 
-            <!-- ✅ Error Handling -->
-            {% if error %}
-                <div class="error-box">
-                    {{ error }}
-                </div>
+      <form method="post" novalidate>
+        {% csrf_token %}
 
-                <script>
-                    alert("{{ error }}");
-                </script>
-            {% endif %}
-
-            <form method="post" novalidate>
-                {% csrf_token %}
-
-                <div class="mb-3">
-                    <input type="text" name="username"
-                           class="form-control"
-                           placeholder="Username" required>
-                </div>
-
-                <div class="mb-3">
-                    <input type="email" name="email"
-                           class="form-control"
-                           placeholder="Email" required>
-                </div>
-
-                <div class="mb-3">
-                    <input type="password" name="password"
-                           class="form-control"
-                           placeholder="Password" required>
-                </div>
-
-                <div class="mb-3">
-                    <select name="role" class="form-control" required>
-                        <option value="">Select Role</option>
-                        <option value="student">🎓 Student</option>
-                        <option value="admin">🛠️ Admin</option>
-                    </select>
-                </div>
-
-                <button class="btn btn-primary btn-pill w-100">
-                    Register
-                </button>
-            </form>
-
-            <div class="text-center mt-3">
-                <small class="text-muted">
-                    Already registered?
-                    <a href="/login/" class="fw-semibold">Login</a>
-                </small>
-            </div>
-
+        <div class="mb-3">
+          <input
+            type="text"
+            name="username"
+            class="form-control"
+            placeholder="Username"
+            required
+          />
         </div>
-    </div>
 
+        <div class="mb-3">
+          <input
+            type="email"
+            name="email"
+            class="form-control"
+            placeholder="Email"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <input
+            type="password"
+            name="password"
+            class="form-control"
+            placeholder="Password"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <select name="role" class="form-control" required>
+            <option value="">Select Role</option>
+            <option value="student">🎓 Student</option>
+            <option value="admin">🛠️ Admin</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary btn-pill w-100">Register</button>
+      </form>
+
+      <div class="text-center mt-3">
+        <small class="text-muted">
+          Already registered?
+          <a href="/login/" class="fw-semibold">Login</a>
+        </small>
+      </div>
+    </div>
+  </div>
 </div>
 
 {% endblock %}
